@@ -4,8 +4,6 @@
 
 This project provides a Python script (`image_encrypt.py`) that demonstrates a basic image encryption and decryption technique by manipulating the pixel values of an image.  The script uses the Pillow library to access and modify pixel data, applying a simple XOR operation to encrypt and decrypt the image.
 
-**Author:** yuvaprasath
-
 ## Features
 
 * Encrypts an image by performing a bitwise XOR operation on the Red, Green, and Blue (RGB) values of each pixel.
