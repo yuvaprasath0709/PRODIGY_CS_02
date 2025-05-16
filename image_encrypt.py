@@ -1,61 +1,55 @@
-from PIL import Image
 import os
 
-def encrypt_image_pixels(image_path, key):
+def encrypt_image(image_path, key):
     """
-    Encrypts the pixel data of an image using a simple XOR cipher on RGB values.
+    Encrypts an image file by applying XOR operation to its binary data.
+    This code was developed by yuvaprasath.
 
     Args:
         image_path (str): The path to the image file.
         key (int): An integer key for the XOR operation.
 
     Returns:
-        Image.Image: The encrypted PIL Image object, or None on error.
+        bytes: The encrypted byte data of the image, or None on error.
     """
     try:
-        img = Image.open(image_path).convert("RGB")
-        pixels = img.load()
-        width, height = img.size
-        for x in range(width):
-            for y in range(height):
-                r, g, b = pixels[x, y]
-                new_r = r ^ key
-                new_g = g ^ key
-                new_b = b ^ key
-                pixels[x, y] = (new_r, new_g, new_b)
-        return img
+        with open(image_path, 'rb') as image_file:
+            image_data = image_file.read()
     except FileNotFoundError:
         print(f"Error: Image file not found at {image_path}")
         return None
     except Exception as e:
-        print(f"Error loading image: {e}")
+        print(f"Error reading image file: {e}")
         return None
 
-def decrypt_image_pixels(encrypted_image, key):
+    encrypted_data = bytearray()
+    for byte in image_data:
+        encrypted_byte = byte ^ key
+        encrypted_data.append(encrypted_byte)
+    return bytes(encrypted_data)
+
+def decrypt_image(encrypted_data, key):
     """
-    Decrypts an image that was encrypted using the encrypt_image_pixels function.
+    Decrypts image data that was encrypted using the encrypt_image function.
+    This code was developed by yuvaprasath.
 
     Args:
-        encrypted_image (Image.Image): The encrypted PIL Image object.
+        encrypted_data (bytes): The encrypted byte data of the image.
         key (int): The integer key used for the XOR operation during encryption.
 
     Returns:
-        Image.Image: The decrypted PIL Image object.
+        bytes: The decrypted byte data of the image.
     """
-    pixels = encrypted_image.load()
-    width, height = encrypted_image.size
-    for x in range(width):
-        for y in range(height):
-            r, g, b = pixels[x, y]
-            new_r = r ^ key
-            new_g = g ^ key
-            new_b = b ^ key
-            pixels[x, y] = (new_r, new_g, new_b)
-    return encrypted_image
+    decrypted_data = bytearray()
+    for byte in encrypted_data:
+        decrypted_byte = byte ^ key
+        decrypted_data.append(decrypted_byte)
+    return bytes(decrypted_data)
 
-def get_output_path_pixel(input_path, action):
+def get_output_path(input_path, action):
     """
-    Generates a suitable output path for pixel-manipulated images.
+    Generates a suitable output path for the encrypted/decrypted image.
+    This code was developed by yuvaprasath.
 
     Args:
         input_path (str): The input file path.
@@ -66,20 +60,25 @@ def get_output_path_pixel(input_path, action):
     """
     base_name, ext = os.path.splitext(input_path)
     if action == "encrypt":
-        return base_name + "_pixel_encrypted" + ext
+        return base_name + "_encrypted" + ext
     elif action == "decrypt":
-        return base_name + "_pixel_decrypted" + ext
+        return base_name + "_decrypted" + ext
     return None
 
 def main():
     """
-    Main function to run the image pixel manipulation encryption/decryption program.
-    Coded by yuvaprasath.
+    Main function to run the image encryption/decryption program.
+    This program encrypts and decrypts image files by manipulating their binary data.
+    This code was developed by yuvaprasath.
     """
-    print("Image Pixel Manipulation Encryption/Decryption Tool")
-    print("Coded by yuvaprasath.\n")
+    print("Novel Approach to Image Encryption using Pixel Manipulation in Python")
+    print("Leveraging cryptographic algorithms, individual pixel values undergo")
+    print("substitution (XOR), making the image unreadable.")
+    print("This code was developed by yuvaprasath.\n")
+    print("Let's start with Image Encryption:\n")
+
     while True:
-        action = input("Do you want to (e)ncrypt or (d)ecrypt an image (pixels)? (q) to quit: ").lower()
+        action = input("Do you want to (e)ncrypt or (d)ecrypt an image? (q) to quit: ").lower()
         if action == 'q':
             break
         elif action not in ['e', 'd']:
@@ -93,30 +92,36 @@ def main():
             continue
 
         if action == 'e':
-            image_path = input("Enter the path to the image file: ")
-            encrypted_image = encrypt_image_pixels(image_path, key)
-            if encrypted_image:
-                output_path = get_output_path_pixel(image_path, "encrypt")
+            image_path = input("Enter the path of the image for encryption: ")
+            encrypted_data = encrypt_image(image_path, key)
+            if encrypted_data:
+                output_path = get_output_path(image_path, "encrypt")
                 try:
-                    encrypted_image.save(output_path)
-                    print(f"Pixel-encrypted image saved to {output_path}")
+                    with open(output_path, 'wb') as outfile:
+                        outfile.write(encrypted_data)
+                    print(f"Encryption successful! Encrypted image saved as: {output_path}\n")
+                    print("As the binary data of the image has been altered, you will be unable to open the image directly.")
                 except Exception as e:
                     print(f"Error saving encrypted image: {e}")
         elif action == 'd':
-            image_path = input("Enter the path to the encrypted image file: ")
+            print("\nNow let's move to Decrypting the Image:\n")
+            encrypted_path = input("Enter the path of the encrypted image: ")
             try:
-                encrypted_image = Image.open(image_path)
-                decrypted_image = decrypt_image_pixels(encrypted_image, key)
-                output_path = get_output_path_pixel(image_path, "decrypt")
+                with open(encrypted_path, 'rb') as infile:
+                    encrypted_data = infile.read()
+                decrypted_data = decrypt_image(encrypted_data, key)
+                output_path = get_output_path(encrypted_path, "decrypt")
                 try:
-                    decrypted_image.save(output_path)
-                    print(f"Pixel-decrypted image saved to {output_path}")
+                    with open(output_path, 'wb') as outfile:
+                        outfile.write(decrypted_data)
+                    print(f"Decryption successful! Decrypted image saved as: {output_path}\n")
+                    print("The image should now be in its original readable form.")
                 except Exception as e:
                     print(f"Error saving decrypted image: {e}")
             except FileNotFoundError:
-                print(f"Error: Encrypted image file not found at {image_path}")
+                print(f"Error: Encrypted image file not found at {encrypted_path}")
             except Exception as e:
-                print(f"Error loading encrypted image: {e}")
+                print(f"Error reading encrypted image file: {e}")
 
 if __name__ == "__main__":
     main()
